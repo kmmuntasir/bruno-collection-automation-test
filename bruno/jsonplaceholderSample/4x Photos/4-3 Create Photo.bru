@@ -1,0 +1,46 @@
+meta {
+  name: 4-3 Create Photo
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/photos
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "albumId": 1,
+    "title": "New Photo Title",
+    "url": "https://via.placeholder.com/600/sample",
+    "thumbnailUrl": "https://via.placeholder.com/150/sample"
+  }
+}
+
+tests {
+  test("Status should be 201", () => {
+    expect(res.status).to.equal(201);
+  });
+  
+  test("Response should contain new photo ID", () => {
+    expect(res.body).to.have.property("id");
+    expect(res.body.id).to.be.a("number");
+  });
+  
+  test("Response body should match request data", () => {
+    expect(res.body.albumId).to.equal(1);
+    expect(res.body.title).to.equal("New Photo Title");
+    expect(res.body.url).to.equal("https://via.placeholder.com/600/sample");
+    expect(res.body.thumbnailUrl).to.equal("https://via.placeholder.com/150/sample");
+  });
+  
+  test("Response should have all required properties", () => {
+    expect(res.body).to.have.property("albumId");
+    expect(res.body).to.have.property("id");
+    expect(res.body).to.have.property("title");
+    expect(res.body).to.have.property("url");
+    expect(res.body).to.have.property("thumbnailUrl");
+  });
+}

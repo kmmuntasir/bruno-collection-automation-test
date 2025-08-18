@@ -1,0 +1,46 @@
+meta {
+  name: 2-4 Create Comment
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/comments
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "postId": 1,
+    "name": "Sample comment name",
+    "email": "user@example.com",
+    "body": "This is a sample comment body"
+  }
+}
+
+tests {
+  test("Status should be 201", () => {
+    expect(res.status).to.equal(201);
+  });
+  
+  test("Response should contain new comment ID", () => {
+    expect(res.body).to.have.property("id");
+    expect(res.body.id).to.be.a("number");
+  });
+  
+  test("Response body should match request data", () => {
+    expect(res.body.postId).to.equal(1);
+    expect(res.body.name).to.equal("Sample comment name");
+    expect(res.body.email).to.equal("user@example.com");
+    expect(res.body.body).to.equal("This is a sample comment body");
+  });
+  
+  test("Response should have all required properties", () => {
+    expect(res.body).to.have.property("postId");
+    expect(res.body).to.have.property("id");
+    expect(res.body).to.have.property("name");
+    expect(res.body).to.have.property("email");
+    expect(res.body).to.have.property("body");
+  });
+}

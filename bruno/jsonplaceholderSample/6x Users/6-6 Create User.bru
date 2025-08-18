@@ -1,0 +1,64 @@
+meta {
+  name: 6-6 Create User
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/users
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "John Doe",
+    "username": "johndoe",
+    "email": "john@example.com",
+    "address": {
+      "street": "123 Main St",
+      "suite": "Apt. 1",
+      "city": "Anytown",
+      "zipcode": "12345",
+      "geo": {
+        "lat": "40.7128",
+        "lng": "-74.0060"
+      }
+    },
+    "phone": "555-123-4567",
+    "website": "johndoe.com",
+    "company": {
+      "name": "Doe Enterprises",
+      "catchPhrase": "Innovative solutions",
+      "bs": "cutting-edge technology"
+    }
+  }
+}
+
+tests {
+  test("Status should be 201", () => {
+    expect(res.status).to.equal(201);
+  });
+  
+  test("Response should contain new user ID", () => {
+    expect(res.body).to.have.property("id");
+    expect(res.body.id).to.be.a("number");
+  });
+  
+  test("Response body should match request data", () => {
+    expect(res.body.name).to.equal("John Doe");
+    expect(res.body.username).to.equal("johndoe");
+    expect(res.body.email).to.equal("john@example.com");
+  });
+  
+  test("Response should have all required properties", () => {
+    expect(res.body).to.have.property("id");
+    expect(res.body).to.have.property("name");
+    expect(res.body).to.have.property("username");
+    expect(res.body).to.have.property("email");
+    expect(res.body).to.have.property("address");
+    expect(res.body).to.have.property("phone");
+    expect(res.body).to.have.property("website");
+    expect(res.body).to.have.property("company");
+  });
+}

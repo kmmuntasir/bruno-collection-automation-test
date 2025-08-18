@@ -1,0 +1,32 @@
+meta {
+  name: 3-2 Get Single Album
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/albums/1
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status should be 200", () => {
+    expect(res.status).to.equal(200);
+  });
+  
+  test("Album ID should match requested ID", () => {
+    expect(res.body.id).to.equal(1);
+  });
+  
+  test("Album should have all required properties", () => {
+    expect(res.body).to.have.property("userId");
+    expect(res.body).to.have.property("id");
+    expect(res.body).to.have.property("title");
+  });
+  
+  test("Title should be a string", () => {
+    expect(res.body.title).to.be.a("string");
+    expect(res.body.title).to.have.length.above(0);
+  });
+}

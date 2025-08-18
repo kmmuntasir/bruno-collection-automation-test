@@ -1,0 +1,45 @@
+meta {
+  name: 2-6 Partially Update Comment
+  type: http
+  seq: 6
+}
+
+patch {
+  url: {{baseUrl}}/comments/1
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "body": "Partially updated comment body"
+  }
+}
+
+tests {
+  test("Status should be 200", () => {
+    expect(res.status).to.equal(200);
+  });
+  
+  test("Comment ID should match requested ID", () => {
+    expect(res.body.id).to.equal(1);
+  });
+  
+  test("Updated field should match request", () => {
+    expect(res.body.body).to.equal("Partially updated comment body");
+  });
+  
+  test("Other fields should remain unchanged", () => {
+    expect(res.body).to.have.property("postId");
+    expect(res.body).to.have.property("name");
+    expect(res.body).to.have.property("email");
+  });
+  
+  test("Response should have all required properties", () => {
+    expect(res.body).to.have.property("postId");
+    expect(res.body).to.have.property("id");
+    expect(res.body).to.have.property("name");
+    expect(res.body).to.have.property("email");
+    expect(res.body).to.have.property("body");
+  });
+}

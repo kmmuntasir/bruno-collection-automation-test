@@ -1,0 +1,39 @@
+meta {
+  name: 4-2 Get Single Photo
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/photos/1
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status should be 200", () => {
+    expect(res.status).to.equal(200);
+  });
+  
+  test("Photo ID should match requested ID", () => {
+    expect(res.body.id).to.equal(1);
+  });
+  
+  test("Photo should have all required properties", () => {
+    expect(res.body).to.have.property("albumId");
+    expect(res.body).to.have.property("id");
+    expect(res.body).to.have.property("title");
+    expect(res.body).to.have.property("url");
+    expect(res.body).to.have.property("thumbnailUrl");
+  });
+  
+  test("URLs should be valid format", () => {
+    expect(res.body.url).to.match(/^https?:\/\/.+/);
+    expect(res.body.thumbnailUrl).to.match(/^https?:\/\/.+/);
+  });
+  
+  test("Title should be a non-empty string", () => {
+    expect(res.body.title).to.be.a("string");
+    expect(res.body.title).to.have.length.above(0);
+  });
+}

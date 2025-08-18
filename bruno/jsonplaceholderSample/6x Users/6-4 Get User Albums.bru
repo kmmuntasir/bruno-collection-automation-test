@@ -1,17 +1,13 @@
 meta {
-  name: 1-1 Get All Posts
+  name: 6-4 Get User Albums
   type: http
-  seq: 1
+  seq: 4
 }
 
 get {
-  url: {{baseUrl}}/posts?_limit=3
+  url: {{baseUrl}}/users/1/albums
   body: none
   auth: none
-}
-
-params:query {
-  _limit: 3
 }
 
 tests {
@@ -23,22 +19,21 @@ tests {
     expect(res.body).to.be.an("array");
   });
   
-  test("Should return exactly 3 posts due to limit", () => {
-    expect(res.body).to.have.length(3);
+  test("All albums should belong to specified user", () => {
+    res.body.forEach(album => {
+      expect(album.userId).to.equal(1);
+    });
   });
   
-  test("Each post should have required properties", () => {
+  test("Each album should have required properties", () => {
     if (res.body.length > 0) {
       expect(res.body[0]).to.have.property("userId");
       expect(res.body[0]).to.have.property("id");
       expect(res.body[0]).to.have.property("title");
-      expect(res.body[0]).to.have.property("body");
     }
   });
   
-  test("Post ID should be a number", () => {
-    if (res.body.length > 0) {
-      expect(res.body[0].id).to.be.a("number");
-    }
+  test("Should return exactly 10 albums for user 1", () => {
+    expect(res.body).to.have.length(10);
   });
 }

@@ -1,11 +1,11 @@
 meta {
-  name: 1-4 Update Post
+  name: 3-5 Update Album
   type: http
-  seq: 4
+  seq: 5
 }
 
 put {
-  url: {{baseUrl}}/posts/1
+  url: {{baseUrl}}/albums/1
   body: json
   auth: none
 }
@@ -13,9 +13,8 @@ put {
 body:json {
   {
     "id": 1,
-    "title": "Updated Post Title",
-    "body": "Updated post body content",
-    "userId": 1
+    "userId": 1,
+    "title": "Updated Album Title"
   }
 }
 
@@ -24,25 +23,18 @@ tests {
     expect(res.status).to.equal(200);
   });
   
-  test("Post ID should match requested ID", () => {
+  test("Album ID should match requested ID", () => {
     expect(res.body.id).to.equal(1);
   });
   
   test("Response body should match request data", () => {
-    expect(res.body.title).to.equal("Updated Post Title");
-    expect(res.body.body).to.equal("Updated post body content");
     expect(res.body.userId).to.equal(1);
+    expect(res.body.title).to.equal("Updated Album Title");
   });
   
   test("Response should have all required properties", () => {
     expect(res.body).to.have.property("userId");
     expect(res.body).to.have.property("id");
     expect(res.body).to.have.property("title");
-    expect(res.body).to.have.property("body");
-  });
-  
-  test("Updated content should be strings", () => {
-    expect(res.body.title).to.be.a("string");
-    expect(res.body.body).to.be.a("string");
   });
 }

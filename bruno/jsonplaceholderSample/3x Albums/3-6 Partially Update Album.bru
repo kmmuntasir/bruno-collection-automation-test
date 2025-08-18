@@ -1,18 +1,18 @@
 meta {
-  name: 1-5 Partially Update Post
+  name: 3-6 Partially Update Album
   type: http
-  seq: 5
+  seq: 6
 }
 
 patch {
-  url: {{baseUrl}}/posts/1
+  url: {{baseUrl}}/albums/1
   body: json
   auth: none
 }
 
 body:json {
   {
-    "title": "Patched Post Title"
+    "title": "Patched Album Title"
   }
 }
 
@@ -21,23 +21,22 @@ tests {
     expect(res.status).to.equal(200);
   });
   
-  test("Post ID should match requested ID", () => {
+  test("Album ID should match requested ID", () => {
     expect(res.body.id).to.equal(1);
   });
   
   test("Updated field should match request", () => {
-    expect(res.body.title).to.equal("Patched Post Title");
+    expect(res.body.title).to.equal("Patched Album Title");
   });
   
   test("Other fields should remain unchanged", () => {
     expect(res.body).to.have.property("userId");
-    expect(res.body).to.have.property("body");
+    expect(res.body).to.have.property("id");
   });
   
   test("Response should have all required properties", () => {
     expect(res.body).to.have.property("userId");
     expect(res.body).to.have.property("id");
     expect(res.body).to.have.property("title");
-    expect(res.body).to.have.property("body");
   });
 }

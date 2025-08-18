@@ -1,17 +1,17 @@
 meta {
-  name: 1-1 Get All Posts
+  name: 5-1 Get All Todos
   type: http
   seq: 1
 }
 
 get {
-  url: {{baseUrl}}/posts?_limit=3
+  url: {{baseUrl}}/todos?_limit=5
   body: none
   auth: none
 }
 
 params:query {
-  _limit: 3
+  _limit: 5
 }
 
 tests {
@@ -23,22 +23,18 @@ tests {
     expect(res.body).to.be.an("array");
   });
   
-  test("Should return exactly 3 posts due to limit", () => {
-    expect(res.body).to.have.length(3);
-  });
-  
-  test("Each post should have required properties", () => {
+  test("Each todo should have required properties", () => {
     if (res.body.length > 0) {
       expect(res.body[0]).to.have.property("userId");
       expect(res.body[0]).to.have.property("id");
       expect(res.body[0]).to.have.property("title");
-      expect(res.body[0]).to.have.property("body");
+      expect(res.body[0]).to.have.property("completed");
     }
   });
   
-  test("Post ID should be a number", () => {
+  test("Completed should be a boolean", () => {
     if (res.body.length > 0) {
-      expect(res.body[0].id).to.be.a("number");
+      expect(res.body[0].completed).to.be.a("boolean");
     }
   });
 }

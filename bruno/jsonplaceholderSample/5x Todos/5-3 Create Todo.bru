@@ -1,20 +1,20 @@
 meta {
-  name: 1-3 Create Post
+  name: 5-3 Create Todo
   type: http
   seq: 3
 }
 
 post {
-  url: {{baseUrl}}/posts
+  url: {{baseUrl}}/todos
   body: json
   auth: none
 }
 
 body:json {
   {
-    "title": "foo",
-    "body": "bar",
-    "userId": 1
+    "userId": 1,
+    "title": "New Todo Item",
+    "completed": false
   }
 }
 
@@ -23,25 +23,21 @@ tests {
     expect(res.status).to.equal(201);
   });
   
-  test("Response should contain new post ID", () => {
+  test("Response should contain new todo ID", () => {
     expect(res.body).to.have.property("id");
     expect(res.body.id).to.be.a("number");
   });
   
   test("Response body should match request data", () => {
-    expect(res.body.title).to.equal("foo");
-    expect(res.body.body).to.equal("bar");
     expect(res.body.userId).to.equal(1);
+    expect(res.body.title).to.equal("New Todo Item");
+    expect(res.body.completed).to.equal(false);
   });
   
   test("Response should have all required properties", () => {
     expect(res.body).to.have.property("userId");
     expect(res.body).to.have.property("id");
     expect(res.body).to.have.property("title");
-    expect(res.body).to.have.property("body");
-  });
-  
-  test("New post ID should be greater than 100", () => {
-    expect(res.body.id).to.be.above(100);
+    expect(res.body).to.have.property("completed");
   });
 }
