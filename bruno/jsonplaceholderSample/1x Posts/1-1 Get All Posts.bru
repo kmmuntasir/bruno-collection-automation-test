@@ -1,0 +1,15 @@
+meta {
+  name: 1-1 Get All Posts
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/posts?_limit=3
+  body: none
+  auth: none
+}
+
+params:query {
+  _limit: 3
+}

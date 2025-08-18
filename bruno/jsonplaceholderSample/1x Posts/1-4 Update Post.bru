@@ -1,0 +1,32 @@
+meta {
+  name: 1-4 Update Post
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/posts/1
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "title": "foo",
+    "body": "bar",
+    "userId": 1
+  }
+}
+
+tests {
+  test("ID matches the UserId", () => {
+      expect(res.body.id).to.equal(1);
+  });
+  
+  
+  test("Response body matches the Request", () => {
+      expect(req.body.title).to.equal(res.body.title);
+      expect(req.body.body).to.equal(res.body.body);
+      expect(req.body.userId).to.equal(res.body.userId);
+  });
+}
