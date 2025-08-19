@@ -75,12 +75,12 @@ This project will be used as a **sandbox for API testing with Bruno** (and poten
 ---
 
 ## 5. Non-Functional Requirements
-- **Tech stack**: Node.js (Express), in-memory JSON store (e.g., `lowdb` or plain array).
+- **Tech stack**: Node.js (Express), persistent JSON file store (e.g., `lowdb` with file adapter).
 - **Authentication**: JWT (HMAC secret).
 - **Error Handling**: Consistent error responses in JSON:  
   `{ "error": "message" }`
 - **Port**: 3000 (default).
-- **Stateless**: No persistence beyond process memory (reset on restart).
+- **Stateful**: Data persists to local JSON file, survives process restarts.
 
 ---
 
