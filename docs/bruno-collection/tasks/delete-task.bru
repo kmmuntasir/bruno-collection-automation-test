@@ -56,7 +56,8 @@ tests {
   
   test("Should return no content when deleted", () => {
     if (res.status === 204) {
-      expect(res.body).to.be.undefined;
+      // For 204 No Content, the response body should be empty
+      expect(res.body === undefined || res.body === null || res.body === '').to.be.true;
     }
   });
   

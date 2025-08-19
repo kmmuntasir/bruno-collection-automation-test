@@ -183,7 +183,7 @@ router.delete('/:id', async (req, res) => {
       });
     }
 
-    res.status(204).send();
+    res.status(204).end();
   } catch (error) {
     console.error('Delete task error:', error);
     res.status(500).json({
