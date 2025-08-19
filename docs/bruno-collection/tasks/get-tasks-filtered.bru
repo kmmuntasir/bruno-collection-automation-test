@@ -5,12 +5,8 @@ meta {
 }
 
 get {
-  url: {{baseUrl}}/tasks
+  url: {{baseUrl}}/tasks?status=pending
   auth: bearer
-}
-
-params:query {
-  status: pending
 }
 
 headers {

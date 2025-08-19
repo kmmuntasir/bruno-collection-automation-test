@@ -5,12 +5,8 @@ meta {
 }
 
 get {
-  url: {{baseUrl}}/tasks
+  url: {{baseUrl}}/tasks?status=invalid-status
   auth: bearer
-}
-
-params:query {
-  status: invalid-status
 }
 
 headers {

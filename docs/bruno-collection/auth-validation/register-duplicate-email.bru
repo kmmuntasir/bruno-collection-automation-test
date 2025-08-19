@@ -22,12 +22,11 @@ body:json {
 }
 
 script:pre-request {
-  console.log("Testing registration with duplicate email:", bru.getVar("testUserEmail"));
+  // Use a fixed email that would be duplicate if the previous registration test ran
+  const duplicateEmail = bru.getVar("testUserEmail") || "test@example.com";
+  bru.setVar("duplicateTestEmail", duplicateEmail);
   
-  // Ensure we have a test user email that should already exist
-  if (!bru.getVar("testUserEmail")) {
-    bru.setVar("testUserEmail", "duplicate-test@example.com");
-  }
+  console.log("Testing registration with potential duplicate email:", duplicateEmail);
 }
 
 script:post-response {
