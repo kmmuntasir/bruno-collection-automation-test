@@ -1,0 +1,92 @@
+meta {
+  name: Create Task Special Characters
+  type: http
+  seq: 22
+}
+
+post {
+  url: {{baseUrl}}/tasks
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+body:json {
+  {
+    "title": "Test with éspecial çharacters & symbols 🚀 @#$%",
+    "description": "Description with\nnewlines and \"quotes\" and 'apostrophes' and émojis 📝",
+    "status": "pending"
+  }
+}
+
+script:pre-request {
+  // Ensure we have authentication token
+  if (!bru.getEnvVar("authToken")) {
+    throw new Error("Authentication token not found. Please login first.");
+  }
+  
+  console.log("Testing task creation with special characters");
+}
+
+script:post-response {
+  console.log("Create task with special chars status:", res.status);
+  console.log("Response time:", res.responseTime + "ms");
+  
+  if (res.status === 201) {
+    console.log("✅ Task with special characters created successfully");
+    console.log("Title:", res.body.title);
+  } else {
+    console.error("❌ Failed to create task with special characters:", res.status);
+  }
+}
+
+tests {
+  test("Should create task successfully", () => {
+    expect(res.status).to.equal(201);
+  });
+  
+  test("Should return task object", () => {
+    expect(res.body).to.have.property("id");
+    expect(res.body).to.have.property("title");
+    expect(res.body).to.have.property("description");
+    expect(res.body).to.have.property("status");
+  });
+  
+  test("Should preserve special characters in title", () => {
+    expect(res.body.title).to.equal("Test with éspecial çharacters & symbols 🚀 @#$%");
+  });
+  
+  test("Should preserve special characters in description", () => {
+    expect(res.body.description).to.contain("newlines");
+    expect(res.body.description).to.contain("quotes");
+    expect(res.body.description).to.contain("émojis");
+    expect(res.body.description).to.contain("📝");
+  });
+  
+  test("Should have correct status", () => {
+    expect(res.body.status).to.equal("pending");
+  });
+  
+  test("Should have valid timestamps", () => {
+    expect(res.body.createdAt).to.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/);
+    expect(res.body.updatedAt).to.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/);
+  });
+  
+  test("Response time should be reasonable", () => {
+    expect(res.responseTime).to.be.below(2000);
+  });
+}
+
+assert {
+  res.status: eq 201
+  res.body.title: contains special
+  res.responseTime: lt 2000
+}

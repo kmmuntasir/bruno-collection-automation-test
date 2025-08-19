@@ -1,0 +1,71 @@
+meta {
+  name: Register Duplicate Email
+  type: http
+  seq: 15
+}
+
+post {
+  url: {{baseUrl}}/auth/register
+  body: json
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "email": "{{testUserEmail}}",
+    "password": "test123456"
+  }
+}
+
+script:pre-request {
+  console.log("Testing registration with duplicate email:", bru.getVar("testUserEmail"));
+  
+  // Ensure we have a test user email that should already exist
+  if (!bru.getVar("testUserEmail")) {
+    bru.setVar("testUserEmail", "duplicate-test@example.com");
+  }
+}
+
+script:post-response {
+  console.log("Duplicate email registration status:", res.status);
+  console.log("Response time:", res.responseTime + "ms");
+  
+  if (res.status === 409) {
+    console.log("✅ Duplicate email properly rejected");
+  } else if (res.status === 201) {
+    console.log("⚠️ User created (email wasn't duplicate or was cleared)");
+  } else {
+    console.error("❌ Unexpected status:", res.status);
+  }
+}
+
+tests {
+  test("Should return 409 Conflict or 201 if first registration", () => {
+    expect([201, 409]).to.include(res.status);
+  });
+  
+  test("Should return appropriate error message when conflict", () => {
+    if (res.status === 409) {
+      expect(res.body).to.have.property("error");
+      expect(res.body.error).to.be.a("string");
+      expect(res.body.error.toLowerCase()).to.contain("already exists");
+    }
+  });
+  
+  test("Should not return password in response", () => {
+    expect(res.body).to.not.have.property("password");
+    expect(res.body).to.not.have.property("passwordHash");
+  });
+  
+  test("Response time should be reasonable", () => {
+    expect(res.responseTime).to.be.below(2000);
+  });
+}
+
+assert {
+  res.responseTime: lt 2000
+}

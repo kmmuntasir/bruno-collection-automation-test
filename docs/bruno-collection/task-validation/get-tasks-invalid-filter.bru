@@ -1,0 +1,68 @@
+meta {
+  name: Get Tasks Invalid Filter
+  type: http
+  seq: 20
+}
+
+get {
+  url: {{baseUrl}}/tasks
+  auth: bearer
+}
+
+params:query {
+  status: invalid-status
+}
+
+headers {
+  Accept: application/json
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+script:pre-request {
+  // Ensure we have authentication token
+  if (!bru.getEnvVar("authToken")) {
+    throw new Error("Authentication token not found. Please login first.");
+  }
+  
+  console.log("Testing task filtering with invalid status");
+}
+
+script:post-response {
+  console.log("Get tasks with invalid filter status:", res.status);
+  console.log("Response time:", res.responseTime + "ms");
+  
+  if (res.status === 422) {
+    console.log("✅ Invalid status filter properly rejected");
+  } else {
+    console.error("❌ Expected 422 but got:", res.status);
+  }
+}
+
+tests {
+  test("Should return 422 Unprocessable Entity", () => {
+    expect(res.status).to.equal(422);
+  });
+  
+  test("Should return error message about invalid status filter", () => {
+    expect(res.body).to.have.property("error");
+    expect(res.body.error).to.be.a("string");
+    expect(res.body.error.toLowerCase()).to.contain("status");
+  });
+  
+  test("Should not return task array", () => {
+    expect(res.body).to.not.be.an("array");
+  });
+  
+  test("Response time should be reasonable", () => {
+    expect(res.responseTime).to.be.below(1500);
+  });
+}
+
+assert {
+  res.status: eq 422
+  res.body.error: isString
+  res.responseTime: lt 1500
+}

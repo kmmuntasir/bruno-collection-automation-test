@@ -1,0 +1,65 @@
+meta {
+  name: Get Task Invalid ID
+  type: http
+  seq: 19
+}
+
+get {
+  url: {{baseUrl}}/tasks/invalid-uuid-format
+  auth: bearer
+}
+
+headers {
+  Accept: application/json
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+script:pre-request {
+  // Ensure we have authentication token
+  if (!bru.getEnvVar("authToken")) {
+    throw new Error("Authentication token not found. Please login first.");
+  }
+  
+  console.log("Testing task access with invalid ID format");
+}
+
+script:post-response {
+  console.log("Get task with invalid ID status:", res.status);
+  console.log("Response time:", res.responseTime + "ms");
+  
+  if (res.status === 404) {
+    console.log("✅ Invalid ID properly handled (not found)");
+  } else if (res.status === 400) {
+    console.log("✅ Invalid ID properly rejected (bad request)");
+  } else {
+    console.error("❌ Unexpected status:", res.status);
+  }
+}
+
+tests {
+  test("Should return 404 Not Found or 400 Bad Request", () => {
+    expect([400, 404]).to.include(res.status);
+  });
+  
+  test("Should return error message", () => {
+    expect(res.body).to.have.property("error");
+    expect(res.body.error).to.be.a("string");
+  });
+  
+  test("Should not return task data", () => {
+    expect(res.body).to.not.have.property("id");
+    expect(res.body).to.not.have.property("title");
+  });
+  
+  test("Response time should be reasonable", () => {
+    expect(res.responseTime).to.be.below(1000);
+  });
+}
+
+assert {
+  res.body.error: isString
+  res.responseTime: lt 1000
+}
