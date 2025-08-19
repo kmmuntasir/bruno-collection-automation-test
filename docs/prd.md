@@ -1,10 +1,12 @@
-# Mini Task Manager - PRD
+# Mini Task Manager - Backend API (PRD)
+
+> **Note**: This is a **backend-only** repository containing the API service and related configurations. There is no frontend implementation included.
 
 ## 1. Overview
-The Mini Task Manager is a lightweight backend service built with **Express.js** and an **in-memory JSON store**.  
+The Mini Task Manager is a lightweight **backend-only** API service built with **Express.js** and an **in-memory JSON store**.  
 It is designed to demonstrate and test API workflows with JWT authentication, CRUD operations, query params, path params, and error handling.  
 
-This project will be used as a **sandbox for API testing with Bruno** (and potential migration from Postman).
+This project serves as a **sandbox for API testing with Bruno** (and potential migration from Postman), focusing solely on the backend implementation.
 
 ---
 
@@ -119,25 +121,31 @@ This project will be used as a **sandbox for API testing with Bruno** (and poten
 
 ---
 
-## 8. Acceptance Criteria
+## 8. Acceptance Criteria (Backend Only)
 - **User Authentication**
-  - New users can register successfully
-  - Registered users can log in successfully
+  - New users can register successfully via API
+  - Registered users can authenticate and receive a valid JWT token
 
 - **Task Management**
-  - Logged-in users can perform CRUD operations on their tasks
-  - Supports query parameters for task filtering (e.g., `?status=done`)
+  - Authenticated users can perform CRUD operations on their tasks via API
+  - API supports query parameters for task filtering (e.g., `?status=done`)
+  - All operations properly validate user permissions
 
 - **Error Handling**
-  - Consistent error responses across all endpoints
-  - Errors are properly formatted and testable
+  - Consistent error responses across all API endpoints
+  - Errors are properly formatted in JSON and include appropriate HTTP status codes
+  - All documented error cases are properly handled
 
 - **Setup & Dependencies**
   ```bash
+  # Install dependencies
   npm install
+  
+  # Start the backend server
   npm start
   ```
-  - No external dependencies required
+  - No external database required (uses in-memory storage with file persistence)
+  - Environment variables can be configured via `.env` file
 
 ---
 
