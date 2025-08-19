@@ -1,0 +1,85 @@
+meta {
+  name: Login User
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "email": "{{testUserEmail}}",
+    "password": "{{testUserPassword}}"
+  }
+}
+
+script:pre-request {
+  console.log("Logging in user:", bru.getVar("testUserEmail"));
+  
+  // Ensure we have a test user email
+  if (!bru.getVar("testUserEmail")) {
+    throw new Error("Test user email not found. Run registration first.");
+  }
+}
+
+script:post-response {
+  // Log response details
+  console.log("Login status:", res.status);
+  console.log("Response time:", res.responseTime + "ms");
+  
+  // Store authentication token for subsequent requests
+  if (res.status === 200 && res.body.token) {
+    bru.setVar("authToken", res.body.token);
+    bru.setEnvVar("authToken", res.body.token);
+    console.log("✅ Login successful, token stored");
+    console.log("Token length:", res.body.token.length);
+  } else {
+    console.error("❌ Login failed:", res.body.error);
+    // Clear any existing token
+    bru.setVar("authToken", "");
+    bru.setEnvVar("authToken", "");
+  }
+}
+
+tests {
+  test("Should login successfully", () => {
+    expect(res.status).to.equal(200);
+  });
+  
+  test("Should return JWT token", () => {
+    expect(res.body).to.have.property("token");
+    expect(res.body.token).to.be.a("string");
+    expect(res.body.token).to.have.length.above(50);
+  });
+  
+  test("JWT token should have valid format", () => {
+    expect(res.body.token).to.match(/^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$/);
+  });
+  
+  test("Should not return user password", () => {
+    expect(res.body).to.not.have.property("password");
+    expect(res.body).to.not.have.property("passwordHash");
+  });
+  
+  test("Response time should be reasonable", () => {
+    expect(res.responseTime).to.be.below(2000);
+  });
+  
+  test("Content-Type should be JSON", () => {
+    expect(res.headers["content-type"]).to.contain("application/json");
+  });
+}
+
+assert {
+  res.status: eq 200
+  res.body.token: isString
+  res.responseTime: lt 2000
+}

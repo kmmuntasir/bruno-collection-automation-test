@@ -1,0 +1,58 @@
+meta {
+  name: Health Check
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/health
+}
+
+headers {
+  Accept: application/json
+}
+
+script:post-response {
+  // Log response details
+  console.log("Health check status:", res.status);
+  console.log("Response time:", res.responseTime + "ms");
+  
+  // Verify server is healthy
+  if (res.status === 200 && res.body.status === "healthy") {
+    console.log("✅ Server is healthy");
+  } else {
+    console.error("❌ Server health check failed");
+  }
+}
+
+tests {
+  test("Should return 200 OK", () => {
+    expect(res.status).to.equal(200);
+  });
+  
+  test("Should return healthy status", () => {
+    expect(res.body).to.have.property("status");
+    expect(res.body.status).to.equal("healthy");
+  });
+  
+  test("Should return timestamp", () => {
+    expect(res.body).to.have.property("timestamp");
+    expect(res.body.timestamp).to.be.a("string");
+  });
+  
+  test("Should return uptime", () => {
+    expect(res.body).to.have.property("uptime");
+    expect(res.body.uptime).to.be.a("number");
+    expect(res.body.uptime).to.be.above(0);
+  });
+  
+  test("Response time should be reasonable", () => {
+    expect(res.responseTime).to.be.below(1000);
+  });
+}
+
+assert {
+  res.status: eq 200
+  res.body.status: eq healthy
+  res.responseTime: lt 1000
+}

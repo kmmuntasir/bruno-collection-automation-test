@@ -247,7 +247,27 @@ The API returns consistent JSON error responses:
 - `npm run dev` - Start server with nodemon for development
 
 ### Testing with Bruno
-This API is designed to be tested with Bruno. Import the provided Bruno collection to test all endpoints with proper authentication flows.
+This API is designed to be tested with Bruno. A complete Bruno collection is provided in the `docs/bruno-collection/` folder with comprehensive testing coverage.
+
+#### Bruno Collection Features:
+- **15 test requests** covering all API endpoints
+- **3 environments** (development, staging, production)
+- **Comprehensive test coverage** including success and error scenarios
+- **Automated variable management** for seamless request chaining
+- **Performance testing** with response time assertions
+- **CI/CD ready** for automated testing pipelines
+
+#### Using the Bruno Collection:
+```bash
+# Using Bruno GUI - Import the collection folder
+# docs/bruno-collection/
+
+# Using Bruno CLI
+npm install -g @usebruno/cli
+bruno run docs/bruno-collection --env development
+```
+
+See `docs/bruno-collection/README.md` for detailed usage instructions.
 
 ## Security Notes
 

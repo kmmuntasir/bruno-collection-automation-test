@@ -1,0 +1,97 @@
+meta {
+  name: Get Single Task
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/tasks/{{testTaskId}}
+  auth: bearer
+}
+
+headers {
+  Accept: application/json
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+script:pre-request {
+  // Ensure we have authentication token
+  if (!bru.getEnvVar("authToken")) {
+    throw new Error("Authentication token not found. Please login first.");
+  }
+  
+  // Ensure we have a task ID to fetch
+  const taskId = bru.getEnvVar("testTaskId") || bru.getVar("firstTaskId");
+  if (!taskId) {
+    throw new Error("No task ID found. Create a task first.");
+  }
+  
+  console.log("Fetching task ID:", taskId);
+}
+
+script:post-response {
+  // Log response details
+  console.log("Get single task status:", res.status);
+  console.log("Response time:", res.responseTime + "ms");
+  
+  if (res.status === 200) {
+    console.log("✅ Task fetched successfully");
+    console.log("Task title:", res.body.title);
+    console.log("Task status:", res.body.status);
+  } else if (res.status === 404) {
+    console.log("⚠️ Task not found - this might be expected if task was deleted");
+  } else {
+    console.error("❌ Failed to fetch task:", res.body.error);
+  }
+}
+
+tests {
+  test("Should return task or not found", () => {
+    expect([200, 404]).to.include(res.status);
+  });
+  
+  test("Should return task object when found", () => {
+    if (res.status === 200) {
+      expect(res.body).to.have.property("id");
+      expect(res.body).to.have.property("userId");
+      expect(res.body).to.have.property("title");
+      expect(res.body).to.have.property("description");
+      expect(res.body).to.have.property("status");
+      expect(res.body).to.have.property("createdAt");
+      expect(res.body).to.have.property("updatedAt");
+    }
+  });
+  
+  test("Should belong to authenticated user", () => {
+    if (res.status === 200) {
+      const userId = bru.getVar("testUserId");
+      if (userId) {
+        expect(res.body.userId).to.equal(userId);
+      }
+    }
+  });
+  
+  test("Should have valid task ID", () => {
+    if (res.status === 200) {
+      expect(res.body.id).to.be.a("string");
+      expect(res.body.id).to.have.length.above(10);
+    }
+  });
+  
+  test("Should have valid status", () => {
+    if (res.status === 200) {
+      expect(res.body.status).to.be.oneOf(["pending", "done"]);
+    }
+  });
+  
+  test("Response time should be reasonable", () => {
+    expect(res.responseTime).to.be.below(1500);
+  });
+}
+
+assert {
+  res.responseTime: lt 1500
+}

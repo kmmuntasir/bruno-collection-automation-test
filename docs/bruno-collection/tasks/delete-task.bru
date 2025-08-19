@@ -1,0 +1,70 @@
+meta {
+  name: Delete Task
+  type: http
+  seq: 9
+}
+
+delete {
+  url: {{baseUrl}}/tasks/{{testTaskId}}
+  auth: bearer
+}
+
+headers {
+  Accept: application/json
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+script:pre-request {
+  // Ensure we have authentication token
+  if (!bru.getEnvVar("authToken")) {
+    throw new Error("Authentication token not found. Please login first.");
+  }
+  
+  // Ensure we have a task ID to delete
+  const taskId = bru.getEnvVar("testTaskId") || bru.getVar("firstTaskId");
+  if (!taskId) {
+    throw new Error("No task ID found. Create a task first.");
+  }
+  
+  console.log("Deleting task ID:", taskId);
+}
+
+script:post-response {
+  // Log response details
+  console.log("Delete task status:", res.status);
+  console.log("Response time:", res.responseTime + "ms");
+  
+  if (res.status === 204) {
+    console.log("✅ Task deleted successfully");
+    // Clear the task ID since it's now deleted
+    bru.setVar("testTaskId", "");
+    bru.setEnvVar("testTaskId", "");
+  } else if (res.status === 404) {
+    console.log("⚠️ Task not found - might have already been deleted");
+  } else {
+    console.error("❌ Failed to delete task:", res.body ? res.body.error : "Unknown error");
+  }
+}
+
+tests {
+  test("Should delete task successfully or return not found", () => {
+    expect([204, 404]).to.include(res.status);
+  });
+  
+  test("Should return no content when deleted", () => {
+    if (res.status === 204) {
+      expect(res.body).to.be.undefined;
+    }
+  });
+  
+  test("Response time should be reasonable", () => {
+    expect(res.responseTime).to.be.below(1500);
+  });
+}
+
+assert {
+  res.responseTime: lt 1500
+}

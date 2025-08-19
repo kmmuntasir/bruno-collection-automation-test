@@ -1,0 +1,130 @@
+meta {
+  name: Update Task
+  type: http
+  seq: 8
+}
+
+put {
+  url: {{baseUrl}}/tasks/{{testTaskId}}
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+body:json {
+  {
+    "title": "Updated Task Title",
+    "description": "This task has been updated with new information",
+    "status": "done"
+  }
+}
+
+script:pre-request {
+  // Ensure we have authentication token
+  if (!bru.getEnvVar("authToken")) {
+    throw new Error("Authentication token not found. Please login first.");
+  }
+  
+  // Ensure we have a task ID to update
+  const taskId = bru.getEnvVar("testTaskId") || bru.getVar("firstTaskId");
+  if (!taskId) {
+    throw new Error("No task ID found. Create a task first.");
+  }
+  
+  console.log("Updating task ID:", taskId);
+}
+
+script:post-response {
+  // Log response details
+  console.log("Update task status:", res.status);
+  console.log("Response time:", res.responseTime + "ms");
+  
+  if (res.status === 200) {
+    console.log("✅ Task updated successfully");
+    console.log("Updated title:", res.body.title);
+    console.log("Updated status:", res.body.status);
+    
+    // Verify updatedAt timestamp changed
+    if (res.body.updatedAt !== res.body.createdAt) {
+      console.log("✅ UpdatedAt timestamp changed as expected");
+    }
+  } else if (res.status === 404) {
+    console.log("⚠️ Task not found - might have been deleted");
+  } else {
+    console.error("❌ Failed to update task:", res.body.error);
+  }
+}
+
+tests {
+  test("Should update task successfully or return not found", () => {
+    expect([200, 404]).to.include(res.status);
+  });
+  
+  test("Should return updated task object", () => {
+    if (res.status === 200) {
+      expect(res.body).to.have.property("id");
+      expect(res.body).to.have.property("userId");
+      expect(res.body).to.have.property("title");
+      expect(res.body).to.have.property("description");
+      expect(res.body).to.have.property("status");
+      expect(res.body).to.have.property("createdAt");
+      expect(res.body).to.have.property("updatedAt");
+    }
+  });
+  
+  test("Should have updated title", () => {
+    if (res.status === 200) {
+      expect(res.body.title).to.equal("Updated Task Title");
+    }
+  });
+  
+  test("Should have updated status", () => {
+    if (res.status === 200) {
+      expect(res.body.status).to.equal("done");
+    }
+  });
+  
+  test("Should have updated description", () => {
+    if (res.status === 200) {
+      expect(res.body.description).to.equal("This task has been updated with new information");
+    }
+  });
+  
+  test("Should belong to authenticated user", () => {
+    if (res.status === 200) {
+      const userId = bru.getVar("testUserId");
+      if (userId) {
+        expect(res.body.userId).to.equal(userId);
+      }
+    }
+  });
+  
+  test("UpdatedAt should be different from createdAt", () => {
+    if (res.status === 200) {
+      expect(res.body.updatedAt).to.not.equal(res.body.createdAt);
+    }
+  });
+  
+  test("Should have valid timestamps", () => {
+    if (res.status === 200) {
+      expect(res.body.createdAt).to.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/);
+      expect(res.body.updatedAt).to.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/);
+    }
+  });
+  
+  test("Response time should be reasonable", () => {
+    expect(res.responseTime).to.be.below(2000);
+  });
+}
+
+assert {
+  res.responseTime: lt 2000
+}

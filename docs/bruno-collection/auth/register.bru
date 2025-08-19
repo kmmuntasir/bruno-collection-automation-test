@@ -1,0 +1,100 @@
+meta {
+  name: Register User
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/auth/register
+  body: json
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "email": "{{testUserEmail}}",
+    "password": "{{testUserPassword}}"
+  }
+}
+
+vars:pre-request {
+  timestamp: {{$timestamp}}
+  requestId: {{$uuid}}
+}
+
+script:pre-request {
+  // Generate unique email for testing if needed
+  const timestamp = Date.now();
+  const uniqueEmail = `test-${timestamp}@example.com`;
+  
+  // Use unique email in development to avoid conflicts
+  if (bru.getEnvVar("environment") === "development") {
+    bru.setVar("testUserEmail", uniqueEmail);
+  }
+  
+  console.log("Registering user with email:", bru.getVar("testUserEmail"));
+}
+
+script:post-response {
+  // Log response details
+  console.log("Registration status:", res.status);
+  console.log("Response time:", res.responseTime + "ms");
+  
+  // Store user ID for subsequent requests
+  if (res.status === 201 && res.body.id) {
+    bru.setVar("testUserId", res.body.id);
+    bru.setEnvVar("testUserId", res.body.id);
+    console.log("✅ User registered successfully, ID:", res.body.id);
+  } else if (res.status === 409) {
+    console.log("⚠️ User already exists, this is expected in some test scenarios");
+  } else {
+    console.error("❌ Registration failed:", res.body.error);
+  }
+}
+
+tests {
+  test("Should register user successfully or return conflict", () => {
+    expect([201, 409]).to.include(res.status);
+  });
+  
+  test("Should return user object when successful", () => {
+    if (res.status === 201) {
+      expect(res.body).to.have.property("id");
+      expect(res.body).to.have.property("email");
+      expect(res.body).to.have.property("createdAt");
+      expect(res.body).to.not.have.property("password");
+      expect(res.body).to.not.have.property("passwordHash");
+    }
+  });
+  
+  test("Should have valid user ID format", () => {
+    if (res.status === 201) {
+      expect(res.body.id).to.be.a("string");
+      expect(res.body.id).to.have.length.above(10);
+    }
+  });
+  
+  test("Should return valid email", () => {
+    if (res.status === 201) {
+      expect(res.body.email).to.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
+    }
+  });
+  
+  test("Should return ISO timestamp", () => {
+    if (res.status === 201) {
+      expect(res.body.createdAt).to.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/);
+    }
+  });
+  
+  test("Response time should be reasonable", () => {
+    expect(res.responseTime).to.be.below(3000);
+  });
+}
+
+assert {
+  res.responseTime: lt 3000
+}
